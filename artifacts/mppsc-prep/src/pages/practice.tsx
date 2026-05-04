@@ -253,7 +253,7 @@ export default function Practice() {
             <Switch checked={focusWeak} onCheckedChange={setFocusWeak} />
           </div>
         </CardContent>
-        <CardFooter className="bg-muted/50 border-t p-6">
+        <CardFooter className="bg-muted/50 border-t p-6 flex flex-col gap-3">
           <Button 
             className="w-full" 
             size="lg" 
@@ -261,8 +261,13 @@ export default function Practice() {
             disabled={createSession.isPending}
           >
             {createSession.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Start Practice
+            {createSession.isPending ? "AI Questions Generate हो रहे हैं..." : "Start Practice"}
           </Button>
+          {createSession.isPending && (
+            <p className="text-xs text-center text-muted-foreground">
+              पहली बार Gemini AI से questions generate होने में 15-20 seconds लग सकते हैं।
+            </p>
+          )}
         </CardFooter>
       </Card>
     </div>

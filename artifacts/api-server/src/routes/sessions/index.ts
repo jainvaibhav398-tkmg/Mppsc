@@ -1,14 +1,77 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { questionsTable, sessionsTable, sessionAnswersTable } from "@workspace/db";
+import { ai } from "@workspace/integrations-gemini-ai";
 import {
   CreateSessionBody,
   SubmitSessionParams,
   SubmitSessionBody,
 } from "@workspace/api-zod";
-import { eq, gt, and, sql, inArray } from "drizzle-orm";
+import { eq, gt, and, sql, inArray, count } from "drizzle-orm";
 
 const router = Router();
+
+async function generateQuestionsForSubject(subject: string, count: number) {
+  const prompt = `Generate exactly ${count} MPPSC (Madhya Pradesh Public Service Commission) level multiple choice questions about ${subject}.
+The questions should test deep knowledge relevant to MPPSC mains and prelims exams.
+Return a valid JSON array (no markdown, no extra text) with this exact structure:
+[
+  {
+    "questionText": "...",
+    "optionA": "...",
+    "optionB": "...",
+    "optionC": "...",
+    "optionD": "...",
+    "correctOption": "A",
+    "explanation": "Brief explanation of the correct answer",
+    "subject": "${subject}",
+    "topic": "specific topic name",
+    "difficulty": "medium"
+  }
+]`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    config: { responseMimeType: "application/json", maxOutputTokens: 8192 },
+  });
+
+  const text = response.text ?? "[]";
+  const parsed: {
+    questionText: string;
+    optionA: string;
+    optionB: string;
+    optionC: string;
+    optionD: string;
+    correctOption: string;
+    explanation: string;
+    subject: string;
+    topic: string;
+    difficulty: string;
+  }[] = JSON.parse(text);
+
+  if (!Array.isArray(parsed) || parsed.length === 0) return [];
+
+  const inserted = await db
+    .insert(questionsTable)
+    .values(
+      parsed.map((q) => ({
+        questionText: q.questionText,
+        optionA: q.optionA,
+        optionB: q.optionB,
+        optionC: q.optionC,
+        optionD: q.optionD,
+        correctOption: q.correctOption,
+        explanation: q.explanation || "",
+        subject: q.subject || subject,
+        topic: q.topic || subject,
+        difficulty: q.difficulty || "medium",
+      }))
+    )
+    .returning();
+
+  return inserted;
+}
 
 router.get("/sessions", async (req, res) => {
   const sessions = await db
@@ -28,6 +91,18 @@ router.post("/sessions", async (req, res) => {
 
   const { subject, questionCount, focusWeakTopics } = parsed.data;
 
+  // Check how many questions exist for this subject
+  const [existingCount] = await db
+    .select({ count: count() })
+    .from(questionsTable)
+    .where(eq(questionsTable.subject, subject));
+
+  // Auto-generate if not enough questions exist
+  if ((existingCount?.count ?? 0) < questionCount) {
+    const needed = Math.max(questionCount * 2, 20); // generate 2x or at least 20
+    await generateQuestionsForSubject(subject, needed);
+  }
+
   let questions;
   if (focusWeakTopics) {
     questions = await db
@@ -44,18 +119,26 @@ router.post("/sessions", async (req, res) => {
     if (questions.length < questionCount) {
       const remaining = questionCount - questions.length;
       const existingIds = questions.map((q) => q.id);
-      const extra = await db
-        .select()
-        .from(questionsTable)
-        .where(
-          existingIds.length > 0
-            ? and(
-                eq(questionsTable.subject, subject),
-                sql`${questionsTable.id} NOT IN (${sql.join(existingIds.map((id) => sql`${id}`), sql`, `)})`
+      const extra =
+        existingIds.length > 0
+          ? await db
+              .select()
+              .from(questionsTable)
+              .where(
+                and(
+                  eq(questionsTable.subject, subject),
+                  sql`${questionsTable.id} NOT IN (${sql.join(
+                    existingIds.map((id) => sql`${id}`),
+                    sql`, `
+                  )})`
+                )
               )
-            : eq(questionsTable.subject, subject)
-        )
-        .limit(remaining);
+              .limit(remaining)
+          : await db
+              .select()
+              .from(questionsTable)
+              .where(eq(questionsTable.subject, subject))
+              .limit(remaining);
       questions = [...questions, ...extra];
     }
   } else {
