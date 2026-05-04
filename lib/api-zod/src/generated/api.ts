@@ -14,3 +14,253 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all conversations
+ */
+export const ListGeminiConversationsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListGeminiConversationsResponse = zod.array(
+  ListGeminiConversationsResponseItem,
+);
+
+/**
+ * @summary Create a new conversation
+ */
+export const CreateGeminiConversationBody = zod.object({
+  title: zod.string(),
+});
+
+/**
+ * @summary Get conversation with messages
+ */
+export const GetGeminiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetGeminiConversationResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  messages: zod.array(
+    zod.object({
+      id: zod.number(),
+      conversationId: zod.number(),
+      role: zod.string(),
+      content: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete a conversation
+ */
+export const DeleteGeminiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List messages in a conversation
+ */
+export const ListGeminiMessagesParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListGeminiMessagesResponseItem = zod.object({
+  id: zod.number(),
+  conversationId: zod.number(),
+  role: zod.string(),
+  content: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListGeminiMessagesResponse = zod.array(
+  ListGeminiMessagesResponseItem,
+);
+
+/**
+ * @summary Send a message and receive an AI response (SSE stream)
+ */
+export const SendGeminiMessageParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SendGeminiMessageBody = zod.object({
+  content: zod.string(),
+});
+
+/**
+ * @summary Generate an image from a text prompt
+ */
+export const GenerateGeminiImageBody = zod.object({
+  prompt: zod.string(),
+});
+
+export const GenerateGeminiImageResponse = zod.object({
+  b64_json: zod.string(),
+  mimeType: zod.string(),
+});
+
+/**
+ * @summary Generate MPPSC MCQs using Gemini AI
+ */
+export const GenerateQuestionsBody = zod.object({
+  subject: zod.string().describe("MP History or MP Geography"),
+  topic: zod.string().optional(),
+  count: zod.number().describe("Number of questions to generate (max 20)"),
+  focusWeakTopics: zod.boolean().optional(),
+});
+
+export const GenerateQuestionsResponseItem = zod.object({
+  id: zod.number(),
+  questionText: zod.string(),
+  optionA: zod.string(),
+  optionB: zod.string(),
+  optionC: zod.string(),
+  optionD: zod.string(),
+  correctOption: zod.string(),
+  explanation: zod.string(),
+  subject: zod.string(),
+  topic: zod.string(),
+  difficulty: zod.string(),
+  timesAnswered: zod.number(),
+  timesWrong: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const GenerateQuestionsResponse = zod.array(
+  GenerateQuestionsResponseItem,
+);
+
+/**
+ * @summary List all saved questions
+ */
+export const ListQuestionsQueryParams = zod.object({
+  topic: zod.coerce.string().optional(),
+  subject: zod.coerce.string().optional(),
+});
+
+export const ListQuestionsResponseItem = zod.object({
+  id: zod.number(),
+  questionText: zod.string(),
+  optionA: zod.string(),
+  optionB: zod.string(),
+  optionC: zod.string(),
+  optionD: zod.string(),
+  correctOption: zod.string(),
+  explanation: zod.string(),
+  subject: zod.string(),
+  topic: zod.string(),
+  difficulty: zod.string(),
+  timesAnswered: zod.number(),
+  timesWrong: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListQuestionsResponse = zod.array(ListQuestionsResponseItem);
+
+/**
+ * @summary Get questions from weak/incorrect topics for revision
+ */
+export const ListWeakQuestionsResponseItem = zod.object({
+  id: zod.number(),
+  questionText: zod.string(),
+  optionA: zod.string(),
+  optionB: zod.string(),
+  optionC: zod.string(),
+  optionD: zod.string(),
+  correctOption: zod.string(),
+  explanation: zod.string(),
+  subject: zod.string(),
+  topic: zod.string(),
+  difficulty: zod.string(),
+  timesAnswered: zod.number(),
+  timesWrong: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListWeakQuestionsResponse = zod.array(
+  ListWeakQuestionsResponseItem,
+);
+
+/**
+ * @summary List practice sessions
+ */
+export const ListSessionsResponseItem = zod.object({
+  id: zod.number(),
+  subject: zod.string(),
+  totalQuestions: zod.number(),
+  correctCount: zod.number(),
+  wrongCount: zod.number(),
+  score: zod.number(),
+  completedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListSessionsResponse = zod.array(ListSessionsResponseItem);
+
+/**
+ * @summary Start a new practice session
+ */
+export const CreateSessionBody = zod.object({
+  subject: zod.string(),
+  questionCount: zod.number(),
+  focusWeakTopics: zod.boolean().optional(),
+});
+
+/**
+ * @summary Submit answers for a practice session
+ */
+export const SubmitSessionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SubmitSessionBody = zod.object({
+  answers: zod.array(
+    zod.object({
+      questionId: zod.number(),
+      selectedOption: zod.string(),
+    }),
+  ),
+});
+
+export const SubmitSessionResponse = zod.object({
+  session: zod.object({
+    id: zod.number(),
+    subject: zod.string(),
+    totalQuestions: zod.number(),
+    correctCount: zod.number(),
+    wrongCount: zod.number(),
+    score: zod.number(),
+    completedAt: zod.coerce.date().nullish(),
+    createdAt: zod.coerce.date(),
+  }),
+  wrongTopics: zod.array(zod.string()),
+  correctCount: zod.number(),
+  wrongCount: zod.number(),
+  score: zod.number(),
+});
+
+/**
+ * @summary Get overall performance statistics
+ */
+export const GetStatsOverviewResponse = zod.object({
+  totalQuestions: zod.number(),
+  totalSessions: zod.number(),
+  averageScore: zod.number(),
+  totalCorrect: zod.number(),
+  totalWrong: zod.number(),
+  weakTopicsCount: zod.number(),
+  streak: zod.number(),
+});
+
+/**
+ * @summary Get per-topic accuracy breakdown
+ */
+export const GetTopicStatsResponseItem = zod.object({
+  topic: zod.string(),
+  subject: zod.string(),
+  totalAttempts: zod.number(),
+  correctCount: zod.number(),
+  accuracy: zod.number(),
+});
+export const GetTopicStatsResponse = zod.array(GetTopicStatsResponseItem);

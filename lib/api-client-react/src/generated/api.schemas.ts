@@ -8,3 +8,128 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface GeminiConversation {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+export interface GeminiMessage {
+  id: number;
+  conversationId: number;
+  role: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface CreateGeminiConversationBody {
+  title: string;
+}
+
+export interface SendGeminiMessageBody {
+  content: string;
+}
+
+export interface GeminiConversationWithMessages {
+  id: number;
+  title: string;
+  createdAt: string;
+  messages: GeminiMessage[];
+}
+
+export interface GenerateGeminiImageBody {
+  prompt: string;
+}
+
+export interface GenerateGeminiImageResponse {
+  b64_json: string;
+  mimeType: string;
+}
+
+export interface GeminiError {
+  error: string;
+}
+
+export interface Question {
+  id: number;
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
+  correctOption: string;
+  explanation: string;
+  subject: string;
+  topic: string;
+  difficulty: string;
+  timesAnswered: number;
+  timesWrong: number;
+  createdAt: string;
+}
+
+export interface GenerateQuestionsBody {
+  /** MP History or MP Geography */
+  subject: string;
+  topic?: string;
+  /** Number of questions to generate (max 20) */
+  count: number;
+  focusWeakTopics?: boolean;
+}
+
+export interface Session {
+  id: number;
+  subject: string;
+  totalQuestions: number;
+  correctCount: number;
+  wrongCount: number;
+  score: number;
+  completedAt?: string | null;
+  createdAt: string;
+}
+
+export interface CreateSessionBody {
+  subject: string;
+  questionCount: number;
+  focusWeakTopics?: boolean;
+}
+
+export interface SessionResult {
+  session: Session;
+  wrongTopics: string[];
+  correctCount: number;
+  wrongCount: number;
+  score: number;
+}
+
+export interface AnswerSubmission {
+  questionId: number;
+  selectedOption: string;
+}
+
+export interface SubmitSessionBody {
+  answers: AnswerSubmission[];
+}
+
+export interface StatsOverview {
+  totalQuestions: number;
+  totalSessions: number;
+  averageScore: number;
+  totalCorrect: number;
+  totalWrong: number;
+  weakTopicsCount: number;
+  streak: number;
+}
+
+export interface TopicStat {
+  topic: string;
+  subject: string;
+  totalAttempts: number;
+  correctCount: number;
+  accuracy: number;
+}
+
+export type ListQuestionsParams = {
+  topic?: string;
+  subject?: string;
+};

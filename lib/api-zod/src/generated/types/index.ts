@@ -6,4 +6,22 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./answerSubmission";
+export * from "./createGeminiConversationBody";
+export * from "./createSessionBody";
+export * from "./geminiConversation";
+export * from "./geminiConversationWithMessages";
+export * from "./geminiError";
+export * from "./geminiMessage";
+export * from "./generateGeminiImageBody";
+export * from "./generateGeminiImageResponse";
+export * from "./generateQuestionsBody";
 export * from "./healthStatus";
+export * from "./listQuestionsParams";
+export * from "./question";
+export * from "./sendGeminiMessageBody";
+export * from "./session";
+export * from "./sessionResult";
+export * from "./statsOverview";
+export * from "./submitSessionBody";
+export * from "./topicStat";

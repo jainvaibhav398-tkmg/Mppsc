@@ -10,6 +10,14 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: gemini
+    description: Gemini AI chat and image operations
+  - name: questions
+    description: MPPSC MCQ question bank operations
+  - name: sessions
+    description: Practice session and result operations
+  - name: stats
+    description: Performance statistics and analytics
 paths:
   /healthz:
     get:
@@ -24,6 +32,282 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /gemini/conversations:
+    get:
+      operationId: listGeminiConversations
+      tags: [gemini]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiConversation"
+    post:
+      operationId: createGeminiConversation
+      tags: [gemini]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGeminiConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversation"
+  /gemini/conversations/{id}:
+    get:
+      operationId: getGeminiConversation
+      tags: [gemini]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+    delete:
+      operationId: deleteGeminiConversation
+      tags: [gemini]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+  /gemini/conversations/{id}/messages:
+    get:
+      operationId: listGeminiMessages
+      tags: [gemini]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiMessage"
+    post:
+      operationId: sendGeminiMessage
+      tags: [gemini]
+      summary: Send a message and receive an AI response (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendGeminiMessageBody"
+      responses:
+        "200":
+          description: SSE stream of assistant response chunks
+          content:
+            text/event-stream: {}
+  /gemini/generate-image:
+    post:
+      operationId: generateGeminiImage
+      tags: [gemini]
+      summary: Generate an image from a text prompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateGeminiImageBody"
+      responses:
+        "200":
+          description: Generated image data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateGeminiImageResponse"
+
+  /questions/generate:
+    post:
+      operationId: generateQuestions
+      tags: [questions]
+      summary: Generate MPPSC MCQs using Gemini AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateQuestionsBody"
+      responses:
+        "200":
+          description: Generated questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+  /questions:
+    get:
+      operationId: listQuestions
+      tags: [questions]
+      summary: List all saved questions
+      parameters:
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: subject
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+  /questions/weak:
+    get:
+      operationId: listWeakQuestions
+      tags: [questions]
+      summary: Get questions from weak/incorrect topics for revision
+      responses:
+        "200":
+          description: List of weak questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+
+  /sessions:
+    get:
+      operationId: listSessions
+      tags: [sessions]
+      summary: List practice sessions
+      responses:
+        "200":
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+    post:
+      operationId: createSession
+      tags: [sessions]
+      summary: Start a new practice session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSessionBody"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /sessions/{id}/submit:
+    post:
+      operationId: submitSession
+      tags: [sessions]
+      summary: Submit answers for a practice session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitSessionBody"
+      responses:
+        "200":
+          description: Session result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResult"
+
+  /stats/overview:
+    get:
+      operationId: getStatsOverview
+      tags: [stats]
+      summary: Get overall performance statistics
+      responses:
+        "200":
+          description: Overview stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsOverview"
+  /stats/topics:
+    get:
+      operationId: getTopicStats
+      tags: [stats]
+      summary: Get per-topic accuracy breakdown
+      responses:
+        "200":
+          description: Topic-wise stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopicStat"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +318,286 @@ components:
       required:
         - status
 
+    GeminiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+    GeminiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+    CreateGeminiConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+    SendGeminiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+    GeminiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeminiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+    GenerateGeminiImageBody:
+      type: object
+      properties:
+        prompt:
+          type: string
+      required:
+        - prompt
+    GenerateGeminiImageResponse:
+      type: object
+      properties:
+        b64_json:
+          type: string
+        mimeType:
+          type: string
+      required:
+        - b64_json
+        - mimeType
+    GeminiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        questionText:
+          type: string
+        optionA:
+          type: string
+        optionB:
+          type: string
+        optionC:
+          type: string
+        optionD:
+          type: string
+        correctOption:
+          type: string
+        explanation:
+          type: string
+        subject:
+          type: string
+        topic:
+          type: string
+        difficulty:
+          type: string
+        timesAnswered:
+          type: integer
+        timesWrong:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - questionText
+        - optionA
+        - optionB
+        - optionC
+        - optionD
+        - correctOption
+        - explanation
+        - subject
+        - topic
+        - difficulty
+        - timesAnswered
+        - timesWrong
+        - createdAt
+    GenerateQuestionsBody:
+      type: object
+      properties:
+        subject:
+          type: string
+          description: "MP History or MP Geography"
+        topic:
+          type: string
+        count:
+          type: integer
+          description: Number of questions to generate (max 20)
+        focusWeakTopics:
+          type: boolean
+      required:
+        - subject
+        - count
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+        subject:
+          type: string
+        totalQuestions:
+          type: integer
+        correctCount:
+          type: integer
+        wrongCount:
+          type: integer
+        score:
+          type: number
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - subject
+        - totalQuestions
+        - correctCount
+        - wrongCount
+        - score
+        - createdAt
+    CreateSessionBody:
+      type: object
+      properties:
+        subject:
+          type: string
+        questionCount:
+          type: integer
+        focusWeakTopics:
+          type: boolean
+      required:
+        - subject
+        - questionCount
+    SessionResult:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/Session"
+        wrongTopics:
+          type: array
+          items:
+            type: string
+        correctCount:
+          type: integer
+        wrongCount:
+          type: integer
+        score:
+          type: number
+      required:
+        - session
+        - wrongTopics
+        - correctCount
+        - wrongCount
+        - score
+    SubmitSessionBody:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnswerSubmission"
+      required:
+        - answers
+    AnswerSubmission:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        selectedOption:
+          type: string
+      required:
+        - questionId
+        - selectedOption
+
+    StatsOverview:
+      type: object
+      properties:
+        totalQuestions:
+          type: integer
+        totalSessions:
+          type: integer
+        averageScore:
+          type: number
+        totalCorrect:
+          type: integer
+        totalWrong:
+          type: integer
+        weakTopicsCount:
+          type: integer
+        streak:
+          type: integer
+      required:
+        - totalQuestions
+        - totalSessions
+        - averageScore
+        - totalCorrect
+        - totalWrong
+        - weakTopicsCount
+        - streak
+    TopicStat:
+      type: object
+      properties:
+        topic:
+          type: string
+        subject:
+          type: string
+        totalAttempts:
+          type: integer
+        correctCount:
+          type: integer
+        accuracy:
+          type: number
+      required:
+        - topic
+        - subject
+        - totalAttempts
+        - correctCount
+        - accuracy
