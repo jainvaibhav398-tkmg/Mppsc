@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "vhj27V5LdAbX_Udm08r8L"
+uri = "file://artifacts/mppsc-mobile/assets/images/icon.png"
+type = "image"
+title = "generated_image"

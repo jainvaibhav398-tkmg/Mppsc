@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/mobile/"
+title = "MPPSC Mobile App"
+version = "1.0.0"
+id = "artifacts/mppsc-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/mobile/" ]
+localPort = 24540
+
+[services.development]
+run = "pnpm --filter @workspace/mppsc-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mppsc-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/mppsc-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "24540"
+BASE_PATH = "/mobile/"
