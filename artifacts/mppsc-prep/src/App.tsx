@@ -10,6 +10,7 @@ import Practice from "./pages/practice";
 import Review from "./pages/review";
 import Questions from "./pages/questions";
 import AITutor from "./pages/ai-tutor";
+import DailyTest from "./pages/daily-test";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ function AppRouter() {
     <Layout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/daily-test" component={DailyTest} />
         <Route path="/practice" component={Practice} />
         <Route path="/review" component={Review} />
         <Route path="/questions" component={Questions} />

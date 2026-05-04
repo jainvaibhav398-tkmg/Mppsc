@@ -4,6 +4,7 @@ import geminiRouter from "./gemini";
 import questionsRouter from "./questions";
 import sessionsRouter from "./sessions";
 import statsRouter from "./stats";
+import dailyTestRouter from "./daily-test";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(geminiRouter);
 router.use(questionsRouter);
 router.use(sessionsRouter);
 router.use(statsRouter);
+router.use(dailyTestRouter);
 
 export default router;

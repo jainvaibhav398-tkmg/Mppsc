@@ -32,6 +32,8 @@ export const sessionsTable = pgTable("sessions", {
   score: real("score").notNull().default(0),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  isDaily: boolean("is_daily").notNull().default(false),
+  dailyDate: text("daily_date"),
 });
 
 export const insertSessionSchema = createInsertSchema(sessionsTable).omit({ id: true, createdAt: true });

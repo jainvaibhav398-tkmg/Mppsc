@@ -1,9 +1,10 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, GraduationCap, LayoutDashboard, BrainCircuit, FileQuestion } from "lucide-react";
+import { BookOpen, GraduationCap, LayoutDashboard, BrainCircuit, FileQuestion, CalendarDays } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/daily-test", label: "Daily Test", icon: CalendarDays, badge: "100 Q" },
   { href: "/practice", label: "Practice", icon: GraduationCap },
   { href: "/review", label: "Review Weakness", icon: BookOpen },
   { href: "/questions", label: "Question Bank", icon: FileQuestion },
@@ -34,7 +35,12 @@ export function Layout({ children }: { children: ReactNode }) {
               }`}
             >
               <item.icon size={20} />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {"badge" in item && item.badge && (
+                <span className="text-xs font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
