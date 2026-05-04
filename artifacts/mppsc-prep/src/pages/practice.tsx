@@ -63,11 +63,11 @@ export default function Practice() {
     } else {
       // Submit
       submitSession.mutate(
-        { data: { answers: newAnswers } },
+        { id: activeSession.id, data: { answers: newAnswers } },
         {
           onSuccess: (data) => {
             setResults(data);
-            queryClient.invalidateQueries(); // invalidate all to refresh dashboard
+            queryClient.invalidateQueries();
           }
         }
       );

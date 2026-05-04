@@ -36,7 +36,12 @@ Return a valid JSON array (no markdown, no extra text) with this exact structure
     config: { responseMimeType: "application/json", maxOutputTokens: 8192 },
   });
 
-  const text = response.text ?? "[]";
+  let rawText = response.text ?? "[]";
+  // Truncated JSON fix: trim to last complete object
+  const lastBracket = rawText.lastIndexOf("}");
+  if (lastBracket !== -1 && !rawText.trimEnd().endsWith("]")) {
+    rawText = rawText.substring(0, lastBracket + 1) + "]";
+  }
   const parsed: {
     questionText: string;
     optionA: string;
@@ -48,7 +53,7 @@ Return a valid JSON array (no markdown, no extra text) with this exact structure
     subject: string;
     topic: string;
     difficulty: string;
-  }[] = JSON.parse(text);
+  }[] = JSON.parse(rawText);
 
   if (!Array.isArray(parsed) || parsed.length === 0) return [];
 
@@ -99,7 +104,8 @@ router.post("/sessions", async (req, res) => {
 
   // Auto-generate if not enough questions exist
   if ((existingCount?.count ?? 0) < questionCount) {
-    const needed = Math.max(questionCount * 2, 20); // generate 2x or at least 20
+    // Generate in small batches of 10 to avoid JSON truncation
+    const needed = Math.max(questionCount, 10);
     await generateQuestionsForSubject(subject, needed);
   }
 
@@ -161,7 +167,7 @@ router.post("/sessions", async (req, res) => {
     })
     .returning();
 
-  res.status(201).json({ ...session, questions });
+  res.status(201).json({ session, questions });
 });
 
 router.post("/sessions/:id/submit", async (req, res) => {
