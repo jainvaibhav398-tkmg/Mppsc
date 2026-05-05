@@ -25,16 +25,12 @@ export default function TabLayout() {
         },
         tabBarBackground: () =>
           Platform.OS === "ios" ? (
-            <BlurView
-              intensity={100}
-              tint="light"
-              style={StyleSheet.absoluteFill}
-            />
+            <BlurView intensity={100} tint="light" style={StyleSheet.absoluteFill} />
           ) : isWeb ? (
             <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.tabBar }]} />
           ) : null,
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontFamily: "Inter_500Medium",
           marginBottom: isWeb ? 0 : 4,
         },
@@ -44,36 +40,48 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size ?? 22} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Feather name="home" size={size ?? 22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="practice"
         options={{
           title: "Practice",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="edit-3" size={size ?? 22} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Feather name="edit-3" size={size ?? 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: "MP Map",
+          tabBarIcon: ({ color, size }) => <Feather name="map-pin" size={size ?? 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notes"
+        options={{
+          title: "Notes",
+          tabBarIcon: ({ color, size }) => <Feather name="file-text" size={size ?? 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="timetable"
+        options={{
+          title: "Timetable",
+          tabBarIcon: ({ color, size }) => <Feather name="calendar" size={size ?? 22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: "AI Tutor",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="message-circle" size={size ?? 22} color={color} />
-          ),
+          title: "AI Ask",
+          tabBarIcon: ({ color, size }) => <Feather name="cpu" size={size ?? 22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
-          title: "Progress",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="bar-chart-2" size={size ?? 22} color={color} />
-          ),
+          href: null,
         }}
       />
     </Tabs>

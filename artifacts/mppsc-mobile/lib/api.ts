@@ -106,6 +106,26 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ title }),
       }),
+    askQuestion: async (question: string): Promise<string> => {
+      const conv = await apiFetch<{ id: number; title: string; createdAt: string }>(
+        "/api/gemini/conversations",
+        { method: "POST", body: JSON.stringify({ title: `ask-${Date.now()}` }) }
+      );
+      const res = await fetch(`${getBase()}/api/gemini/conversations/${conv.id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: question }),
+      });
+      const text = await res.text();
+      const chunks = text
+        .split("\n\n")
+        .filter((c) => c.startsWith("data: ") && !c.includes("[DONE]"))
+        .map((c) => {
+          try { return (JSON.parse(c.slice(6)) as { text?: string }).text ?? ""; }
+          catch { return ""; }
+        });
+      return chunks.join("");
+    },
     sendMessage: async (convId: number, content: string): Promise<string> => {
       const res = await fetch(`${getBase()}/api/gemini/conversations/${convId}/messages`, {
         method: "POST",
