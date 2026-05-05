@@ -5,11 +5,17 @@ type QuizState = {
   session: Session | null;
   questions: Question[];
   sessionType: "practice" | "daily" | null;
+  timerPerQuestion: number; // seconds, 0 = no timer
   result: SubmitResult | null;
 };
 
 type QuizContextType = QuizState & {
-  startQuiz: (session: Session, questions: Question[], type: "practice" | "daily") => void;
+  startQuiz: (
+    session: Session,
+    questions: Question[],
+    type: "practice" | "daily",
+    timerPerQuestion?: number
+  ) => void;
   setResult: (result: SubmitResult) => void;
   resetQuiz: () => void;
 };
@@ -21,11 +27,17 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     session: null,
     questions: [],
     sessionType: null,
+    timerPerQuestion: 0,
     result: null,
   });
 
-  const startQuiz = (session: Session, questions: Question[], type: "practice" | "daily") => {
-    setState({ session, questions, sessionType: type, result: null });
+  const startQuiz = (
+    session: Session,
+    questions: Question[],
+    type: "practice" | "daily",
+    timerPerQuestion = 0
+  ) => {
+    setState({ session, questions, sessionType: type, timerPerQuestion, result: null });
   };
 
   const setResult = (result: SubmitResult) => {
@@ -33,7 +45,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetQuiz = () => {
-    setState({ session: null, questions: [], sessionType: null, result: null });
+    setState({ session: null, questions: [], sessionType: null, timerPerQuestion: 0, result: null });
   };
 
   return (
